@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthDto } from './dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { Role } from '@prisma/client/index';
 
 @Injectable()
 export class AuthService {
@@ -23,9 +24,10 @@ export class AuthService {
         data: {
           email: dto.email,
           hash,
+          roles: [Role.USER],
         },
       });
-      return this.signToken(user.id, user.email);
+      return this.signToken(user.id, user.email, user.roles);
     } catch (err) {
       if (
         err instanceof PrismaClientKnownRequestError &&
@@ -53,16 +55,18 @@ export class AuthService {
       throw new ForbiddenException('Credentials incorrect');
     }
 
-    return this.signToken(user.id, user.email);
+    return this.signToken(user.id, user.email, user.roles);
   }
 
   async signToken(
     userId: number,
     email: string,
+    roles: Role[],
   ): Promise<{ access_token: string }> {
     const payload = {
       sub: userId,
       email,
+      roles,
     };
     const secret = this.config.get('JWT_SECRET');
     const expiresIn = this.config.get('JWT_EXPIRE_IN');

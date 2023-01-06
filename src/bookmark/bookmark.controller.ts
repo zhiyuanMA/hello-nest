@@ -17,6 +17,9 @@ import { CreateBookmarkDto, EditBookmarkDto } from './dto';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { BookmarkService } from './bookmark.service';
+import { RolesGuard } from '../auth/guard/roles.guard';
+import { HasRoles } from '../auth/decorator/has-roles.decorator';
+import { Role } from '@prisma/client/index';
 
 @UseGuards(JwtGuard)
 @Controller('bookmarks')
@@ -54,9 +57,11 @@ export class BookmarkController {
     return this.bookmarkService.createBookmark(userId, dto);
   }
 
-  @Post('bulk')
+  @Post('bulk/:id')
+  @HasRoles(Role.ADMIN)
+  @UseGuards(RolesGuard)
   createBulk(
-    @GetUser('id') userId: number,
+    @Param('id') userId: number,
     @Body(new ParseArrayPipe({ items: CreateBookmarkDto }))
     dtos: CreateBookmarkDto[],
   ) {
@@ -80,11 +85,10 @@ export class BookmarkController {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  deleteBookmarkById(
-    @GetUser('id') userId: number,
-    @Param('id', ParseIntPipe) bookmarkId: number,
-  ) {
-    this.logger.debug(`Delete bookmark ${bookmarkId} for user ${userId}`);
-    return this.bookmarkService.deleteBookmarkById(userId, bookmarkId);
+  @HasRoles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  deleteBookmarkById(@Param('id', ParseIntPipe) bookmarkId: number) {
+    this.logger.debug(`Delete bookmark ${bookmarkId}`);
+    return this.bookmarkService.deleteBookmarkById(bookmarkId);
   }
 }

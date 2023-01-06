@@ -63,11 +63,15 @@ export class BookmarkService {
     });
   }
 
-  async deleteBookmarkById(userId: number, bookmarkId: number) {
-    const bookmark = await this.getBookmarkByIds(userId, [bookmarkId]);
+  async deleteBookmarkById(bookmarkId: number) {
+    const bookmark = await this.prisma.bookmark.findUnique({
+      where: {
+        id: bookmarkId,
+      },
+    });
 
     if (!bookmark) {
-      throw new ForbiddenException('Access to resources denied');
+      throw new ForbiddenException('Resources not found');
     }
 
     return await this.prisma.bookmark.delete({ where: { id: bookmarkId } });
