@@ -16,12 +16,20 @@ export class BookmarkService {
     });
   }
 
-  async getBookmarkById(userId: number, bookmarkId: number) {
-    return await this.prisma.bookmark.findFirst({
+  async getBookmarkByIds(userId: number, bookmarkIds: number[]) {
+    return await this.prisma.bookmark.findMany({
       where: {
-        id: bookmarkId,
+        id: { in: bookmarkIds },
         userId,
       },
+    });
+  }
+
+  async createBookmarks(userId: number, dtos: CreateBookmarkDto[]) {
+    return await this.prisma.bookmark.createMany({
+      data: dtos.map((o) => {
+        return { userId, ...o };
+      }),
     });
   }
 
@@ -39,7 +47,7 @@ export class BookmarkService {
     bookmarkId: number,
     dto: EditBookmarkDto,
   ) {
-    const bookmark = await this.getBookmarkById(userId, bookmarkId);
+    const bookmark = await this.getBookmarkByIds(userId, [bookmarkId]);
 
     if (!bookmark) {
       throw new ForbiddenException('Access to resources denied');
@@ -56,7 +64,7 @@ export class BookmarkService {
   }
 
   async deleteBookmarkById(userId: number, bookmarkId: number) {
-    const bookmark = await this.getBookmarkById(userId, bookmarkId);
+    const bookmark = await this.getBookmarkByIds(userId, [bookmarkId]);
 
     if (!bookmark) {
       throw new ForbiddenException('Access to resources denied');

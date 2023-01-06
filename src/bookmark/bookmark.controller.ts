@@ -11,7 +11,6 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CreateBookmarkDto, EditBookmarkDto } from './dto';
@@ -32,23 +31,16 @@ export class BookmarkController {
     return this.bookmarkService.getBookmarks(userId);
   }
 
-  @Get(':id')
-  getBookmarksById(
+  @Get(':ids')
+  getBookmarksByIds(
     @GetUser('id') userId: number,
-    @Param('id', ParseIntPipe) bookmarkId: number,
-  ) {
-    this.logger.debug(
-      `Get bookmarks with user id: ${userId}, and bookmark id: ${bookmarkId}`,
-    );
-    return this.bookmarkService.getBookmarkById(userId, bookmarkId);
-  }
-
-  @Get()
-  findByIds(
-    @Query('ids', new ParseArrayPipe({ items: Number, separator: ',' }))
+    @Param('ids', new ParseArrayPipe({ items: Number, separator: ',' }))
     ids: number[],
   ) {
-    return 'This action returns bookmarks by ids';
+    this.logger.debug(
+      `Get bookmarks with user id: ${userId}, and bookmark id: ${ids}`,
+    );
+    return this.bookmarkService.getBookmarkByIds(userId, ids);
   }
 
   @Post()
@@ -62,12 +54,14 @@ export class BookmarkController {
     return this.bookmarkService.createBookmark(userId, dto);
   }
 
-  @Post()
+  @Post('bulk')
   createBulk(
+    @GetUser('id') userId: number,
     @Body(new ParseArrayPipe({ items: CreateBookmarkDto }))
-    createUserDtos: CreateBookmarkDto[],
+    dtos: CreateBookmarkDto[],
   ) {
-    return 'This action adds new bookmarks';
+    this.logger.debug(`Create bulk for user ${userId}`);
+    return this.bookmarkService.createBookmarks(userId, dtos);
   }
 
   @Patch(':id')
