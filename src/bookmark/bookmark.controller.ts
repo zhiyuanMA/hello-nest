@@ -11,6 +11,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CreateBookmarkDto, EditBookmarkDto } from './dto';
@@ -20,6 +21,7 @@ import { BookmarkService } from './bookmark.service';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { HasRoles } from '../auth/decorator/has-roles.decorator';
 import { Role } from '@prisma/client/index';
+import { Pagination } from '../util/pagination.util';
 
 @UseGuards(JwtGuard)
 @Controller('bookmarks')
@@ -29,9 +31,14 @@ export class BookmarkController {
   constructor(private bookmarkService: BookmarkService) {}
 
   @Get()
-  getBookmarks(@GetUser('id') userId: number) {
-    this.logger.debug(`Get bookmarks with user id: ${userId}`);
-    return this.bookmarkService.getBookmarks(userId);
+  getBookmarks(
+    @GetUser('id') userId: number,
+    @Query() { page, count, orderBy, asc }: Pagination,
+  ) {
+    this.logger.debug(
+      `Get bookmarks with user id: ${userId}, page: ${page}, count: ${count}, orderBy: ${orderBy}, asc: ${asc}`,
+    );
+    return this.bookmarkService.getBookmarks(userId, page, count, orderBy, asc);
   }
 
   @Get(':ids')

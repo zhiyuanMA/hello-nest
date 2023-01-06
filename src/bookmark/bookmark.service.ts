@@ -1,6 +1,8 @@
 import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookmarkDto, EditBookmarkDto } from './dto';
+import { PaginationResult } from '../util/pagination-result.util';
+import { Bookmark } from '@prisma/client/index';
 
 @Injectable()
 export class BookmarkService {
@@ -8,12 +10,37 @@ export class BookmarkService {
 
   constructor(private prisma: PrismaService) {}
 
-  async getBookmarks(userId: number) {
-    return await this.prisma.bookmark.findMany({
+  async getBookmarks(
+    userId: number,
+    page: number,
+    count: number,
+    orderBy?: string,
+    asc?: boolean,
+  ): Promise<PaginationResult<Bookmark>> {
+    if (!orderBy) {
+      orderBy = 'id';
+    }
+    if (asc === undefined) {
+      asc = true;
+    }
+    const orderByObject = {};
+    orderByObject[orderBy] = asc ? 'asc' : 'desc';
+    const data = await this.prisma.bookmark.findMany({
+      skip: page * count,
+      take: count,
       where: {
         userId,
       },
+      orderBy: orderByObject,
     });
+
+    return {
+      page,
+      count,
+      orderBy,
+      asc,
+      data,
+    };
   }
 
   async getBookmarkByIds(userId: number, bookmarkIds: number[]) {
