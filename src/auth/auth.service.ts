@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -8,6 +8,8 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
@@ -29,6 +31,7 @@ export class AuthService {
         err instanceof PrismaClientKnownRequestError &&
         err.code === 'P2002'
       ) {
+        this.logger.error(`Credentials taken, user email: ${dto.email}`);
         throw new ForbiddenException('Credentials taken');
       }
       throw err;
@@ -40,11 +43,13 @@ export class AuthService {
       where: { email: dto.email },
     });
     if (!user) {
+      this.logger.error(`Credentials not found, user email: ${dto.email}`);
       throw new ForbiddenException('Credentials incorrect');
     }
 
     const isMatch = await argon.verify(user.hash, dto.password);
     if (!isMatch) {
+      this.logger.error(`Credentials incorrect, user email: ${dto.email}`);
       throw new ForbiddenException('Credentials incorrect');
     }
 

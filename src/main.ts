@@ -5,7 +5,9 @@ import { PrismaService } from './prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['debug'],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       // If set to true, validator will strip validated (returned) object

@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   Param,
   ParseArrayPipe,
   ParseIntPipe,
@@ -21,10 +22,13 @@ import { BookmarkService } from './bookmark.service';
 @UseGuards(JwtGuard)
 @Controller('bookmarks')
 export class BookmarkController {
+  private readonly logger = new Logger(BookmarkController.name);
+
   constructor(private bookmarkService: BookmarkService) {}
 
   @Get()
   getBookmarks(@GetUser('id') userId: number) {
+    this.logger.debug(`Get bookmarks with user id: ${userId}`);
     return this.bookmarkService.getBookmarks(userId);
   }
 
@@ -33,6 +37,9 @@ export class BookmarkController {
     @GetUser('id') userId: number,
     @Param('id', ParseIntPipe) bookmarkId: number,
   ) {
+    this.logger.debug(
+      `Get bookmarks with user id: ${userId}, and bookmark id: ${bookmarkId}`,
+    );
     return this.bookmarkService.getBookmarkById(userId, bookmarkId);
   }
 
@@ -49,6 +56,9 @@ export class BookmarkController {
     @GetUser('id') userId: number,
     @Body() dto: CreateBookmarkDto,
   ) {
+    this.logger.debug(
+      `Create bookmark for user ${userId} with ${JSON.stringify(dto)}`,
+    );
     return this.bookmarkService.createBookmark(userId, dto);
   }
 
@@ -66,6 +76,11 @@ export class BookmarkController {
     @Param('id', ParseIntPipe) bookmarkId: number,
     @Body() dto: EditBookmarkDto,
   ) {
+    this.logger.debug(
+      `Edit bookmark ${bookmarkId} for user ${userId} with ${JSON.stringify(
+        dto,
+      )}`,
+    );
     return this.bookmarkService.editBookmarkById(userId, bookmarkId, dto);
   }
 
@@ -75,6 +90,7 @@ export class BookmarkController {
     @GetUser('id') userId: number,
     @Param('id', ParseIntPipe) bookmarkId: number,
   ) {
+    this.logger.debug(`Delete bookmark ${bookmarkId} for user ${userId}`);
     return this.bookmarkService.deleteBookmarkById(userId, bookmarkId);
   }
 }
