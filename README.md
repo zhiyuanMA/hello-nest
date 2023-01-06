@@ -17,12 +17,3 @@ This project is a demo or start project for a backend RESTful service.
 #### 6. Prisma integrated
 
 #### 7. e2e testing
-
-### Run the API in development mode
-
-```javascript
-npm
-db:dev:restart // start postgres in docker and push migrations
-npm
-start:dev // start api in dev mode
-```
