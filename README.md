@@ -16,6 +16,6 @@ This project is a demo or start project for a backend RESTful service.
 
 #### 6. Prisma integrated
 
-#### 7. e2e testing
+#### 7. e2e testing with Pactum
 
 <img width="320" alt="1" src="https://user-images.githubusercontent.com/17090820/211584331-07043061-c34b-443b-83a7-7bed61789c9c.png">
